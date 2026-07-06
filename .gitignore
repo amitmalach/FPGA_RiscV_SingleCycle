@@ -1,0 +1,25 @@
+# Vivado/Xilinx specific
+*.jou
+*.log
+*.str
+*.pb
+*.wdb
+*.wcfg
+*.log
+*.zip
+*.xpr.lock
+*.hw/
+*.ip_user_files/
+*.runs/
+*.sim/
+*.srcs/sources_1/ip/
+.Xil/
+
+# OS/System files
+.DS_Store
+Thumbs.db
+
+# IDE/Tool specific
+.vscode/
+.idea/
+.vs/
