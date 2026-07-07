@@ -15,18 +15,14 @@ module Memory (
     input  wire [3:0]  mem_wmask   // byte write mask: one bit per byte
 );
 
-    // 256 instruction words = 1024 bytes.
-    reg [31:0] MEM [0:255];
+    // 1536 words = 1536 * 4 bytes = 6144 bytes = 6 KB RAM.
+    reg [31:0] MEM [0:1535];
 
     initial begin
         // Load the assembled RISC-V program.
         // program.hex must contain one 32-bit instruction word per line.
         $readmemh("program.hex", MEM);
         
-        MEM[100] = {8'h04, 8'h03, 8'h02, 8'h01};
-        MEM[101] = {8'h08, 8'h07, 8'h06, 8'h05};
-        MEM[102] = {8'h0c, 8'h0b, 8'h0a, 8'h09};
-        MEM[103] = {8'hff, 8'h0f, 8'h0e, 8'h0d};
     end
 
     // Synchronous read.

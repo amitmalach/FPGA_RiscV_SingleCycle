@@ -59,7 +59,7 @@
     <Option Name="IPUserFilesDir" Val="$PIPUSERFILESDIR"/>
     <Option Name="IPStaticSourceDir" Val="$PIPUSERFILESDIR/ipstatic"/>
     <Option Name="EnableBDX" Val="FALSE"/>
-    <Option Name="WTXSimLaunchSim" Val="50"/>
+    <Option Name="WTXSimLaunchSim" Val="60"/>
     <Option Name="WTModelSimLaunchSim" Val="0"/>
     <Option Name="WTQuestaLaunchSim" Val="0"/>
     <Option Name="WTIesLaunchSim" Val="0"/>
@@ -137,6 +137,15 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
+      <File Path="$PSRCDIR/sources_1/imports/FROM_BLINKER_TO_RISCV/emitter_uart.v">
+        <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../../BrunoLevy_learnFPGA_repo/FemtoRV/TUTORIALS/FROM_BLINKER_TO_RISCV/emitter_uart.v"/>
+          <Attr Name="ImportTime" Val="1781521364"/>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
       <File Path="$PSRCDIR/sources_1/imports/FROM_BLINKER_TO_RISCV/step1.v">
         <FileInfo>
           <Attr Name="ImportPath" Val="$PPRDIR/../../BrunoLevy_learnFPGA/FemtoRV/TUTORIALS/FROM_BLINKER_TO_RISCV/step1.v"/>
@@ -203,7 +212,7 @@
         <Option Name="LogicalNoCTopLib" Val=""/>
         <Option Name="Dmv" Val=""/>
         <Option Name="xsim.compile.xvlog.more_options" Val="-d BENCH"/>
-        <Option Name="xsim.simulate.runtime" Val="100000ns"/>
+        <Option Name="xsim.simulate.runtime" Val="10000000"/>
       </Config>
     </FileSet>
     <FileSet Name="utils_1" Type="Utils" RelSrcDir="$PSRCDIR/utils_1" RelGenDir="$PGENDIR/utils_1">

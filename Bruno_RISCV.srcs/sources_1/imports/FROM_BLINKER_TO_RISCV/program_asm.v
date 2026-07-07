@@ -34,113 +34,109 @@ module program_asm;
     `include "riscv_assembly.v"
     
     `ifdef BENCH
-       localparam slow_bit=4;
+       localparam slow_bit=0;
     `else
        localparam slow_bit=20;
     `endif
 
-
+    // Memory-mapped IO in IO page, using one-hot word addressing.
+    localparam IO_LEDS_bit      = 0;
+    localparam IO_UART_DAT_bit  = 1;
+    localparam IO_UART_CNTL_bit = 2;
+    
+    // Convert IO bit number into byte offset.
+    //
+    // bit 0 -> 1 << 2 = 4
+    // bit 1 -> 1 << 3 = 8
+    // bit 2 -> 1 << 4 = 16
+    function [31:0] IO_BIT_TO_OFFSET;
+        input [31:0] bitid;
+        begin
+            IO_BIT_TO_OFFSET = 1 << (bitid + 2);
+        end
+    endfunction
+    
     integer i;
     integer fd;
     integer num_words;
-    integer L0_   = 12;
-    integer L1_   = 40;
-    integer wait_ = 64;
-    integer L2_   = 72;
+    integer L0_      = 12;
+    integer L1_      = 20;
+    integer L2_      = 52;
+    integer wait_    = 104;
+    integer wait_L0_ = 112;
+    integer putc_    = 124;
+    integer putc_L0_ = 132;
     
     initial begin
         memPC = 0;
     
-        // Initialize LED register.
-        LI(a0, 0);
-    
-        // ------------------------------------------------------------
-        // Copy 16 bytes from address 400 to address 800
-        // ------------------------------------------------------------
-    
-        // s1 = 16
-        // This is the loop stopping value.
-        LI(s1, 16);
-    
-        // s0 = 0
-        // This is the byte index.
-        LI(s0, 0);
+        LI(sp, 32'h1800);       // end of 6 KB RAM
+        LI(gp, 32'h400000);     // I/O page base address
     
         Label(L0_);
     
-            // a1 = memory byte at address 400 + s0
-            // Source address range: 400..415
-            LB(a1, s0, 400);
-    
-            // memory byte at address 800 + s0 = a1[7:0]
-            // Destination address range: 800..815
-            SB(a1, s0, 800);
-    
-            // Wait so the copy phase is visible/slow enough.
-            CALL(LabelRef(wait_));
-    
-            // s0 = s0 + 1
-            ADDI(s0, s0, 1);
-    
-            // Continue until s0 == 16.
-            BNE(s0, s1, LabelRef(L0_));
-    
-    
-        // ------------------------------------------------------------
-        // Read 16 bytes back from address 800 and show them on LEDs
-        // ------------------------------------------------------------
-    
-        // s0 = 0
-        LI(s0, 0);
+            // Count from 0 to 15 on LEDs.
+            LI(s0, 16);
+            LI(a0, 0);
     
         Label(L1_);
     
-            // a0 = memory byte at address 800 + s0
-            // Since LEDs display a0/x10, this shows copied data.
-            LB(a0, s0, 800);
-    
-            // Wait so each LED value is visible.
+            SW(a0, gp, IO_BIT_TO_OFFSET(IO_LEDS_bit));
             CALL(LabelRef(wait_));
+            ADDI(a0, a0, 1);
+            BNE(a0, s0, LabelRef(L1_));
     
-            // s0 = s0 + 1
-            ADDI(s0, s0, 1);
-    
-            // Continue until s0 == 16.
-            BNE(s0, s1, LabelRef(L1_));
-    
-            // Stop after displaying all copied bytes.
-            EBREAK();
-    
-    
-        // ------------------------------------------------------------
-        // wait() subroutine
-        // ------------------------------------------------------------
-    
-        Label(wait_);
-    
-            // t0 = 1
-            LI(t0, 1);
-    
-            // t0 = 1 << slow_bit
-            // This creates the delay-loop count.
-            SLLI(t0, t0, slow_bit);
+            // Send abcdef...xyz to UART.
+            LI(s0, 26);
+            LI(a0, "a");
+            LI(s1, 0);
     
         Label(L2_);
     
-            // t0 = t0 - 1
+            CALL(LabelRef(putc_));
+            ADDI(a0, a0, 1);
+            ADDI(s1, s1, 1);
+            BNE(s1, s0, LabelRef(L2_));
+    
+            // CR LF.
+            LI(a0, 13);
+            CALL(LabelRef(putc_));
+    
+            LI(a0, 10);
+            CALL(LabelRef(putc_));
+    
+            J(LabelRef(L0_));
+    
+            EBREAK();
+    
+        Label(wait_);
+    
+            LI(t0, 1);
+            SLLI(t0, t0, slow_bit);
+    
+        Label(wait_L0_);
+    
             ADDI(t0, t0, -1);
-    
-            // Repeat until t0 == 0.
-            BNEZ(t0, LabelRef(L2_));
-    
-            // Return to caller.
+            BNEZ(t0, LabelRef(wait_L0_));
             RET();
-   
+    
+        Label(putc_);
+    
+            SW(a0, gp, IO_BIT_TO_OFFSET(IO_UART_DAT_bit));
+    
+            LI(t0, 1 << 9);
+    
+        Label(putc_L0_);
+    
+            LW(t1, gp, IO_BIT_TO_OFFSET(IO_UART_CNTL_bit));
+            AND(t1, t1, t0);
+            BNEZ(t1, LabelRef(putc_L0_));
+            RET();
+    
         endASM();
-
-        // memPC is a byte address, so divide by 4 to get number of words.
+    
         num_words = memPC >> 2;
-
+    
         fd = $fopen("program.hex", "w");
         for (i = 0; i < num_words; i = i + 1) begin
             $fdisplay(fd, "%08x", MEM[i]);

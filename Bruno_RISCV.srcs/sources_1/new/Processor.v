@@ -11,9 +11,8 @@ module Processor (
     output wire        mem_rstrb,
     
     output wire [31:0] mem_wdata,  // data written to memory by STORE
-    output wire [3:0]  mem_wmask,  // byte mask for STORE
+    output wire [3:0]  mem_wmask   // byte mask for STORE
 
-    output reg  [31:0] x10         // debug output: register x1 for LEDs
 );
 
     // add x0, x0, x0
@@ -233,14 +232,9 @@ module Processor (
 	        PC    <= 32'd0;
 	        state <= FETCH_INSTR;
 	        instr <= NOP_CODEOP;
-	        x10    <= 32'd0;
          end else if (clk_enable) begin
 	        if(writeBackEn && rdId != 5'd0) begin
 	            RegisterBank[rdId] <= writeBackData;
-                // Debug display: expose x1 to the SOC LEDs.
-                if (rdId == 5'd10) begin
-                    x10 <= writeBackData;
-                end
                 `ifdef BENCH	 
                     $display("x%0d <= %b",rdId,writeBackData);
                 `endif	 
