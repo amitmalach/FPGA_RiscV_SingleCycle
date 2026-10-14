@@ -33,6 +33,7 @@ module bench();
    parameter         OUT_FILE   = "sim_out.txt";
    parameter integer MAX_CYCLES = 400_000_000;  // 2 s of simulated time at 200 MHz
    parameter integer STOP_LEDS  = 1;
+   parameter integer BAUD       = 115200;       // must match the SoC's UART
 
    // Differential 200 MHz clock: period 5 ns.
    reg sysclk_p = 1'b0;
@@ -85,11 +86,12 @@ module bench();
    integer      fd;
    integer      cycles     = 0;
    integer      uart_bytes = 0;
+   reg          plusarg_given;
 
    initial begin
-      if ($value$plusargs("out=%s", out_file))         ;
-      if ($value$plusargs("max_cycles=%d", max_cycles)) ;
-      if ($value$plusargs("stop_leds=%d", stop_leds))   ;
+      plusarg_given = $value$plusargs("out=%s", out_file);
+      plusarg_given = $value$plusargs("max_cycles=%d", max_cycles);
+      plusarg_given = $value$plusargs("stop_leds=%d", stop_leds);
       fd = $fopen(out_file, "w");
       if (fd == 0) begin
          $display("bench: cannot open output file %0s", out_file);
@@ -127,8 +129,8 @@ module bench();
       end
    end
 
-   // --- UART receiver: 115200 baud, 8N1, LSB first ----------------------------
-   localparam real BIT_PERIOD_NS = 1000000000.0 / 115200.0;
+   // --- UART receiver: 8N1, LSB first ------------------------------------------
+   localparam real BIT_PERIOD_NS = 1000000000.0 / BAUD;
 
    reg [7:0] rx_byte;
    integer   rx_i;

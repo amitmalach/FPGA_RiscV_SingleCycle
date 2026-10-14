@@ -11,18 +11,18 @@ set root [file normalize [file join [file dirname [info script]] ..]]
 set out  [expr {[llength $argv] ? [lindex $argv 0] : [file join $root build baseline]}]
 set part xc7k325tffg900-2
 
-# Source locations. Ticket #4 moves these into rtl/ and constraints/; update here only.
-set rtl_dir  [file join $root Bruno_RISCV.srcs sources_1]
-set hex_dir  [file join $rtl_dir imports FROM_BLINKER_TO_RISCV]
-set rtl_files [list \
-    [file join $rtl_dir imports FROM_BLINKER_TO_RISCV step1.v] \
-    [file join $rtl_dir imports FROM_BLINKER_TO_RISCV clockworks.v] \
-    [file join $rtl_dir imports FROM_BLINKER_TO_RISCV emitter_uart.v] \
-    [file join $rtl_dir new Processor.v] \
-    [file join $rtl_dir new Memory.v] \
-    [file join $rtl_dir new SPIFlash.v] \
-]
-set xdc [file join $root Bruno_RISCV.srcs constrs_1 imports Desktop Genesys-2-Master.xdc]
+# Source locations. The RTL list is shared with sim/run_regression.sh.
+# Ticket #4 moves the image and constraints into rtl/ and constraints/.
+set hex_dir [file join $root Bruno_RISCV.srcs sources_1 imports FROM_BLINKER_TO_RISCV]
+set xdc     [file join $root Bruno_RISCV.srcs constrs_1 imports Desktop Genesys-2-Master.xdc]
+set rtl_files {}
+set fh [open [file join $root vivado rtl_sources.txt]]
+foreach line [split [read $fh] "\n"] {
+    set line [string trim $line]
+    if {$line eq "" || [string index $line 0] eq "#"} continue
+    lappend rtl_files [file join $root $line]
+}
+close $fh
 
 file mkdir $out
 read_verilog $rtl_files

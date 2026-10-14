@@ -8,6 +8,11 @@ show that behavior, timing closure and resource use are unchanged.
 `sim/golden/mandelbrot_bram.txt`, produced by `sim/run_regression.sh --update-golden`
 with the committed mandelbrot firmware image in BRAM boot. See `sim/README.md`.
 
+The RTL it was captured from is the snapshot commit "Record the working-tree RTL as the
+pre-refactor baseline" plus two edits to `step1.v` that change no logic: `BOOT_ADDR`
+became a module parameter (default unchanged) so the testbench can select BRAM boot,
+and `wire eos` moved above its first use because xvlog rejects use-before-declaration.
+
 | | |
 |---|---|
 | Stop reason | `stop_leds`: LED register became 1, the mandelbrot frame counter after the first full frame |
@@ -19,7 +24,9 @@ with the committed mandelbrot firmware image in BRAM boot. See `sim/README.md`.
 
 `vivado -mode batch -nojournal -nolog -source vivado/baseline.tcl`, Vivado 2025.2,
 part `xc7k325tffg900-2`, constraints `Genesys-2-Master.xdc` (200 MHz `sys_clk_p`,
-5.000 ns period). Reports in `build/baseline/` (not committed).
+5.000 ns period). Reports in `build/baseline/` (not committed). Post-refactor numbers
+are only comparable when produced by the same script; a project-mode run with different
+synthesis settings will not match.
 
 | | |
 |---|---|

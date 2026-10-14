@@ -26,8 +26,10 @@ writes one line per event to a trace file:
 
 The golden trace is `sim/golden/mandelbrot_bram.txt`. Pass means the new trace is
 byte-identical: same UART bytes in the same order, same LED changes at the same times,
-same total cycle count. The testbench reads no internal signals, so the RTL can be
-restructured freely without touching it.
+same total cycle count. The cycle count in the `END` line is deliberate: it makes the
+gate stricter than "same bytes", so a refactor that silently changes instruction timing
+fails even when the visible output does not. The testbench reads no internal signals,
+so the RTL can be restructured freely without touching it.
 
 To read the UART output as text:
 
@@ -53,8 +55,9 @@ The run ends at whichever comes first:
 
 Both are testbench parameters and can be overridden with plusargs
 (`+out=`, `+max_cycles=`, `+stop_leds=`; in xsim `-testplusarg "max_cycles=4000000"`).
-`run_regression.sh --max-cycles N` passes the budget through for quick smoke runs; the
-compare still runs and will fail because the `END` line differs.
+`run_regression.sh --max-cycles N` passes the budget through for a quick smoke run
+(a few seconds for a few million cycles) and skips the compare, since a truncated trace
+can never match the golden file.
 
 ## Updating the golden file
 
@@ -65,5 +68,6 @@ and say why in the commit message.
 ## Synthesis baseline
 
 `vivado/baseline.tcl` runs synthesis, placement and routing for the Genesys 2 part in
-non-project mode and writes reports to `build/baseline/`. The numbers from the
-unrefactored design are recorded in `docs/baseline.md`.
+non-project mode and writes reports to `build/baseline/`. The RTL file list it shares
+with the run script is `vivado/rtl_sources.txt`. The numbers from the unrefactored
+design are recorded in `docs/baseline.md`.

@@ -8,7 +8,7 @@
 #
 #   sim/run_regression.sh                 run and compare
 #   sim/run_regression.sh --update-golden run and overwrite the golden trace
-#   sim/run_regression.sh --max-cycles N  shorter run (compare still applies)
+#   sim/run_regression.sh --max-cycles N  smoke run with a short budget; no compare
 #
 # Needs Vivado's xvlog/xelab/xsim on PATH (source settings64.sh first).
 set -euo pipefail
@@ -16,18 +16,11 @@ set -euo pipefail
 SIM_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$SIM_DIR/.." && pwd)"
 
-# Source locations. Ticket #4 moves these into rtl/ and sim/; update here only.
-RTL_DIR="$ROOT/Bruno_RISCV.srcs/sources_1"
-RTL_FILES=(
-    "$RTL_DIR/imports/FROM_BLINKER_TO_RISCV/step1.v"
-    "$RTL_DIR/imports/FROM_BLINKER_TO_RISCV/clockworks.v"
-    "$RTL_DIR/imports/FROM_BLINKER_TO_RISCV/emitter_uart.v"
-    "$RTL_DIR/new/Processor.v"
-    "$RTL_DIR/new/Memory.v"
-    "$RTL_DIR/new/SPIFlash.v"
-)
+# Source locations. The RTL list is shared with vivado/baseline.tcl.
+# Ticket #4 moves the testbench and image into sim/ and rtl/.
+RTL_LIST="$ROOT/vivado/rtl_sources.txt"
 BENCH="$ROOT/Bruno_RISCV.srcs/sim_1/imports/FROM_BLINKER_TO_RISCV/bench_iverilog.v"
-HEX="$RTL_DIR/imports/FROM_BLINKER_TO_RISCV/firmware.hex"
+HEX="$ROOT/Bruno_RISCV.srcs/sources_1/imports/FROM_BLINKER_TO_RISCV/firmware.hex"
 
 GOLDEN="$SIM_DIR/golden/mandelbrot_bram.txt"
 BUILD="$SIM_DIR/build"
@@ -39,8 +32,9 @@ MAX_CYCLES=""
 while [ $# -gt 0 ]; do
     case "$1" in
         --update-golden) UPDATE_GOLDEN=1 ;;
-        --max-cycles)    MAX_CYCLES="$2"; shift ;;
-        -h|--help)       sed -n '2,14p' "$0"; exit 0 ;;
+        --max-cycles)    [ $# -ge 2 ] || { echo "--max-cycles needs a value" >&2; exit 2; }
+                         MAX_CYCLES="$2"; shift ;;
+        -h|--help)       sed -n '/^# SoC simulation/,/^set -/{/^set -/d;s/^# \{0,1\}//p}' "$0"; exit 0 ;;
         *) echo "unknown option: $1" >&2; exit 2 ;;
     esac
     shift
@@ -53,6 +47,12 @@ XILINX_VIVADO="${XILINX_VIVADO:-$(cd "$(dirname "$(command -v xvlog)")/.." && pw
 GLBL="$XILINX_VIVADO/data/verilog/src/glbl.v"
 [ -f "$GLBL" ] || { echo "FAIL: glbl.v not found at $GLBL" >&2; exit 2; }
 [ -f "$HEX" ]  || { echo "FAIL: firmware image not found at $HEX" >&2; exit 2; }
+
+RTL_FILES=()
+while IFS= read -r line; do
+    case "$line" in ''|'#'*) continue ;; esac
+    RTL_FILES+=("$ROOT/$line")
+done < "$RTL_LIST"
 
 # xsim resolves $readmemh("firmware.hex") against its working directory, so
 # run everything from the build directory with a link to the canonical image.
@@ -77,6 +77,12 @@ xsim --nolog "$SNAPSHOT" --runall "${PLUSARGS[@]}" > xsim.out 2>&1 \
 grep '^bench:' xsim.out || true
 echo "   wall time: $(( $(date +%s) - start )) s"
 [ -s "$TRACE" ] || { cat xsim.out; echo "FAIL: no trace written"; exit 1; }
+
+if [ -n "$MAX_CYCLES" ]; then
+    echo "SMOKE: budget of $MAX_CYCLES cycles, trace in $TRACE; not compared to the golden file"
+    grep '^END' "$TRACE"
+    exit 0
+fi
 
 if [ "$UPDATE_GOLDEN" = 1 ]; then
     mkdir -p "$(dirname "$GOLDEN")"
