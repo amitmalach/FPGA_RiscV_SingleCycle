@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2023 Olof Kindgren <olof@award-winning.me>
+// SPDX-License-Identifier: Apache-2.0
+// Origin: emitter_uart.v from CoreScore (https://github.com/olofk/corescore), as
+// redistributed by learn-fpga; comments and signal notes below are this project's.
 // -----------------------------------------------------------------------------
 // Simple UART transmitter
 // -----------------------------------------------------------------------------

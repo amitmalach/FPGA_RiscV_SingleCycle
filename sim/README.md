@@ -78,5 +78,5 @@ iverilog and writes `sim/asm/program.hex`, a RAM image in the same format as
 
 `vivado/baseline.tcl` runs synthesis, placement and routing for the Genesys 2 part in
 non-project mode and writes reports to `build/baseline/`. The RTL file list it shares
-with the run script is `vivado/rtl_sources.txt` (via `vivado/sources.tcl`). The numbers from the unrefactored
+with the run script is `vivado/rtl_sources.txt`. The numbers from the unrefactored
 design are recorded in `docs/baseline.md`.

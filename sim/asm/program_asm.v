@@ -8,8 +8,7 @@
 
 /*
  * To regenerate program.hex (a RAM image in the same format as rtl/firmware.hex):
- *   make -C sim/asm            # iverilog -o program_asm.out program_asm.v && vvp program_asm.out
- *   make -C sim/asm DEFS=-DBENCH   # same, with slow_bit=0 for simulation
+ *   make -C sim/asm [DEFS=-DBENCH]
  */
 
 /*

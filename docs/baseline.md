@@ -9,8 +9,8 @@ show that behavior, timing closure and resource use are unchanged.
 with the committed mandelbrot firmware image in BRAM boot. See `sim/README.md`.
 
 The RTL it was captured from is the snapshot commit "Record the working-tree RTL as the
-pre-refactor baseline" plus two edits to the SoC top (`rtl/SOC.v`, formerly `step1.v`) that change no logic: `BOOT_ADDR`
-became a module parameter (default unchanged) so the testbench can select BRAM boot,
+pre-refactor baseline" plus two edits to the SoC top (`rtl/SOC.v`, formerly `step1.v`)
+that change no logic: `BOOT_ADDR` became a module parameter (default unchanged) so the testbench can select BRAM boot,
 and `wire eos` moved above its first use because xvlog rejects use-before-declaration.
 
 | | |

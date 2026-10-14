@@ -12,10 +12,10 @@
 # copies it into the synthesis and simulation run directories, where
 # Memory.v's $readmemh("firmware.hex") resolves the bare file name.
 
-source [file join [file dirname [info script]] sources.tcl]
+source [file join [file dirname [info script]] common.tcl]
 # build.tcl sets proj_dir before sourcing this script; standalone runs take it from -tclargs.
 if {![info exists proj_dir]} {
-    set proj_dir [expr {[llength $argv] ? [lindex $argv 0] : [file join $root build vivado]}]
+    set proj_dir [arg_or 0 [file join $root build vivado]]
 }
 set proj_dir [file normalize $proj_dir]
 set proj_name soc

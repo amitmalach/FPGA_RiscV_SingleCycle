@@ -1,7 +1,9 @@
 BSD 3-Clause License
 
 Copyright (c) 2026, Amit Malach
-Copyright (c) 2020-2022, Bruno Levy (learn-fpga: rtl/clockworks.v, rtl/emitter_uart.v, sim/asm/riscv_assembly.v, and code adapted from it in rtl/SPIFlash.v and fw/)
+Copyright (c) 2020-2022, Bruno Levy (learn-fpga: rtl/clockworks.v, sim/asm/riscv_assembly.v, and code adapted from it in rtl/SOC.v, rtl/SPIFlash.v and fw/)
+Copyright (c) 2023, Olof Kindgren (rtl/emitter_uart.v, from CoreScore, Apache-2.0)
+Copyright (c) Dmitry V. Sokolov (fw/tinyraytracer.c, ported from https://github.com/ssloy/tinyraytracer)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without

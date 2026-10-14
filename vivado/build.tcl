@@ -8,10 +8,10 @@
 # argument "synth" stops after synthesis. Prints the post-route WNS/WHS and a
 # "BUILD ... timing=MET|FAILED" line; the script errors out if a run fails.
 
-set root [file normalize [file join [file dirname [info script]] ..]]
+source [file join [file dirname [info script]] common.tcl]
 set jobs 4
-set proj_dir [file normalize [expr {[llength $argv] >= 1 ? [lindex $argv 0] : [file join $root build vivado]}]]
-set stage    [expr {[llength $argv] >= 2 ? [lindex $argv 1] : "bitstream"}]
+set proj_dir [file normalize [arg_or 0 [file join $root build vivado]]]
+set stage    [arg_or 1 bitstream]
 if {$stage ni {synth bitstream}} { error "second argument must be synth or bitstream, got '$stage'" }
 set xpr [file join $proj_dir soc.xpr]
 
@@ -40,15 +40,12 @@ if {$stage eq "synth"} {
 }
 
 run_and_check impl_1 -to_step write_bitstream
-set impl_dir [get_property DIRECTORY [get_runs impl_1]]
-set bit [file join $impl_dir SOC.bit]
+set bit [file join [get_property DIRECTORY [get_runs impl_1]] SOC.bit]
 if {![file exists $bit]} { error "BUILD no bitstream at $bit" }
 file mkdir [file join $root build]
 file copy -force $bit [file join $root build SOC.bit]
 
 open_run impl_1
-set wns [get_property SLACK [get_timing_paths -max_paths 1 -nworst 1 -setup]]
-set whs [get_property SLACK [get_timing_paths -max_paths 1 -nworst 1 -hold]]
-puts [format "BUILD WNS_ns=%.3f WHS_ns=%.3f timing=%s" $wns $whs [expr {$wns >= 0 && $whs >= 0 ? "MET" : "FAILED"}]]
+timing_line BUILD
 puts "BUILD bitstream [file join $root build SOC.bit]"
 close_project
