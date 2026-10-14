@@ -1,5 +1,8 @@
 
 #include <stdarg.h>
+#include <stdio.h>
+
+void print_hex_digits(unsigned int val, int nbdigits);
 
 void print_string(const char* s) {
    for(const char* p = s; *p; ++p) {

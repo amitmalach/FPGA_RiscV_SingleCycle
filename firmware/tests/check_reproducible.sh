@@ -8,7 +8,9 @@
 set -euo pipefail
 
 FW_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-HEX="$(make -s -C "$FW_DIR" print-hex-path)"
+# --no-print-directory: when run as a sub-make, the inherited -w flag would
+# otherwise print an "Entering directory" banner into this capture.
+HEX="$(make -s --no-print-directory -C "$FW_DIR" print-hex-path)"
 
 [ -f "$HEX" ] || { echo "FAIL: canonical image $HEX does not exist"; exit 1; }
 
@@ -30,6 +32,6 @@ if cmp -s "$REF" "$HEX"; then
     echo "PASS: regenerated $(basename "$HEX") is byte-identical to the $SRC ($(wc -c < "$HEX") bytes)"
 else
     echo "FAIL: regenerated $HEX differs from the $SRC"
-    diff "$REF" "$HEX" | head -20
+    diff "$REF" "$HEX" | head -20 || true
     exit 1
 fi

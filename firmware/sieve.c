@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include <stdint.h>
 
+void wait(void);   /* wait.S: software delay loop */
+
 /*************************************************************************/
 
 // Note: if this is changed, then checksum need 
