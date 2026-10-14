@@ -1,0 +1,69 @@
+# Simulation regression
+
+One script tells you whether the SoC still behaves exactly like the design it was
+captured from. It simulates the `SOC` top in xsim with the committed firmware image
+(mandelbrot, BRAM boot), records what an outside observer sees, and diffs that trace
+against a committed golden file.
+
+```sh
+source /opt/Xilinx/2025.2/Vivado/settings64.sh   # xvlog/xelab/xsim on PATH
+sim/run_regression.sh                              # PASS / FAIL, exit 0 / 1
+```
+
+A full run simulates one mandelbrot frame, about 154 M clock cycles (0.77 s of
+simulated time), and takes about 4 minutes of wall time in xsim.
+
+## What is compared
+
+The testbench (`Bruno_RISCV.srcs/sim_1/imports/FROM_BLINKER_TO_RISCV/bench_iverilog.v`)
+writes one line per event to a trace file:
+
+| Line | Meaning |
+|---|---|
+| `UART <hex>` | one byte decoded from the FPGA-to-PC UART line (115200 8N1) |
+| `LEDS <time_ns> <hex>` | the LED register changed, with the simulation time in ns |
+| `END <reason> cycles=<n> uart_bytes=<n> leds=<hex>` | why and when the run stopped |
+
+The golden trace is `sim/golden/mandelbrot_bram.txt`. Pass means the new trace is
+byte-identical: same UART bytes in the same order, same LED changes at the same times,
+same total cycle count. The testbench reads no internal signals, so the RTL can be
+restructured freely without touching it.
+
+To read the UART output as text:
+
+```sh
+grep '^UART' sim/golden/mandelbrot_bram.txt | cut -d' ' -f2 | xxd -r -p
+```
+
+## Boot mode and firmware
+
+There is no SPI-flash model, so the testbench instantiates `SOC #(.BOOT_ADDR(0))` to
+force BRAM boot. The RAM loads `firmware.hex` with `$readmemh`; the script links the
+canonical image (`Bruno_RISCV.srcs/sources_1/imports/FROM_BLINKER_TO_RISCV/firmware.hex`,
+produced by `make -C firmware`) into `sim/build/` and runs xsim from there.
+
+## Stop conditions
+
+The run ends at whichever comes first:
+
+- the LED register becomes `STOP_LEDS` (default 1). The mandelbrot demo writes its frame
+  counter to the LEDs at the top of every frame, so this marks the end of the first
+  complete frame;
+- `MAX_CYCLES` input-clock cycles (default 400 M, 2 s simulated).
+
+Both are testbench parameters and can be overridden with plusargs
+(`+out=`, `+max_cycles=`, `+stop_leds=`; in xsim `-testplusarg "max_cycles=4000000"`).
+`run_regression.sh --max-cycles N` passes the budget through for quick smoke runs; the
+compare still runs and will fail because the `END` line differs.
+
+## Updating the golden file
+
+Only when a behavior change is intended. `sim/run_regression.sh --update-golden`
+overwrites the golden trace with the new run; commit it together with the RTL change
+and say why in the commit message.
+
+## Synthesis baseline
+
+`vivado/baseline.tcl` runs synthesis, placement and routing for the Genesys 2 part in
+non-project mode and writes reports to `build/baseline/`. The numbers from the
+unrefactored design are recorded in `docs/baseline.md`.

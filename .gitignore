@@ -30,3 +30,6 @@ Thumbs.db
 firmware/build/
 firmware/*.hex
 firmware/*.hex.*
+
+# Scripted Vivado flow output (vivado/*.tcl) and sim builds
+build/

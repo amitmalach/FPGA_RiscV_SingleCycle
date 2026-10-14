@@ -187,7 +187,11 @@ module SOC (
     // squarely inside ours.
     localparam [31:0] SPIFLASH_BASE        = 32'h01000000; // bit 24 -- matches isSPIFlash above
     localparam [31:0] SPIFLASH_CODE_OFFSET = 32'h00D00000; // 13MB into the chip
-    localparam [31:0] BOOT_ADDR            = SPIFLASH_BASE + SPIFLASH_CODE_OFFSET; // 0x01D00000
+    // BOOT_ADDR is an overridable parameter (no #() list on this module, so a
+    // body `parameter` is settable from the instantiation): the testbench forces
+    // BOOT_ADDR=0 for BRAM boot because no SPI-flash model exists in simulation.
+    // The synthesis default stays flash boot.
+    parameter  [31:0] BOOT_ADDR            = SPIFLASH_BASE + SPIFLASH_CODE_OFFSET; // 0x01D00000
 
     // TO SWITCH BACK TO BOOTING FROM BRAM (everything up to step 22: program
     // held in Memory.v via $readmemh, 6KB limit), change the Processor
@@ -241,6 +245,7 @@ module SOC (
     // address (it goes high once at boot, well before resetn even
     // releases), but there's no reason not to make that explicit in the
     // hardware rather than merely assumed.
+    wire eos;                   // end-of-startup from STARTUPE2 (declared here: used before the instantiation below)
     wire spiflash_rstrb = clk_enable && isSPIFlash && mem_rstrb && eos;
     wire [31:0] SPIFlash_rdata; // this module's answer to a read, muxed into mem_rdata below
     wire        spiflash_rbusy; // high for the whole SPI transaction; drives mem_rbusy below
@@ -469,7 +474,6 @@ module SOC (
     //   CLK/GSR/GTS/KEYCLEARB/PACK/USRDONEO/USRDONETS/CFGCLK/CFGMCLK/PREQ
     //              not relevant to this design; left at their standard safe
     //              defaults (mostly tied off or left unconnected).
-    wire eos;
     STARTUPE2 #(
         .PROG_USR("FALSE"),
         .SIM_CCLK_FREQ(0.0)
