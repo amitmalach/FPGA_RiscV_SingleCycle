@@ -1,35 +1,45 @@
-# Vivado/Xilinx specific
+# Vivado project and everything it generates. The project is regenerated into
+# build/ by vivado/create_project.tcl, so none of it is a source.
+build/
+*.xpr
+*.xpr.lock
+*.cache/
+*.gen/
+*.hw/
+*.ip_user_files/
+*.runs/
+*.sim/
+*.srcs/
+.Xil/
+*.dcp
 *.jou
 *.log
 *.str
 *.pb
 *.wdb
 *.wcfg
-*.log
 *.zip
-*.xpr.lock
-*.hw/
-*.ip_user_files/
-*.runs/
-*.sim/
-*.srcs/sources_1/ip/
-.Xil/
+hs_err_pid*.log
+clockInfo.txt
 
-# OS/System files
+# Firmware build outputs (fw/Makefile writes everything under fw/build/).
+# The *.hex patterns stop stray image copies from reappearing beside the
+# sources; the only tracked image is rtl/firmware.hex, the one the RTL reads.
+fw/build/
+fw/*.hex
+fw/*.hex.*
+# Flash images of the ST-NICCC scene data (built from upstream's scene1.dat, not in the tree).
+niccc_data.mcs
+niccc_data.prm
+
+# Simulation outputs: xsim build tree and the Verilog assembler's products.
+sim/build/
+sim/asm/program.hex
+sim/asm/program_asm.out
+
+# OS / editor
 .DS_Store
 Thumbs.db
-
-# IDE/Tool specific
 .vscode/
 .idea/
 .vs/
-
-# Firmware build outputs (firmware/Makefile writes everything under firmware/build/).
-# The *.hex patterns stop stray image copies from reappearing beside the sources;
-# the only tracked image is the one the RTL reads.
-firmware/build/
-firmware/*.hex
-firmware/*.hex.*
-
-# Scripted Vivado flow output (vivado/*.tcl) and sim builds
-build/

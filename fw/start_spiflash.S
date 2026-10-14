@@ -3,7 +3,7 @@
 # =============================================================================
 # Tutorial step 24. This replaces start.S for flash-resident programs.
 #
-# The CPU's reset vector (Processor.v's RESET_PC, set from step1.v's
+# The CPU's reset vector (Processor.v's RESET_PC, set from SOC.v's
 # BOOT_ADDR) points at the very first byte of the flash code region, and the
 # linker script (spiflash.ld) places this file's .text first
 # in that region -- so _start below is literally the first instruction the

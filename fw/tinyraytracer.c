@@ -13,7 +13,7 @@
 // NOTE: the original tutorial file includes "errno_fix.h" here, which
 // *defines* int* __errno(). This project's build_flash.sh already compiles
 // and links errno.c (same definition, copied from that same tutorial fix)
-// into every program unconditionally -- see firmware/errno.c. Including
+// into every program unconditionally -- see fw/errno.c. Including
 // errno_fix.h here too would define __errno() twice and fail to link with
 // "multiple definition of `__errno'". So: no include needed, it's already
 // provided.

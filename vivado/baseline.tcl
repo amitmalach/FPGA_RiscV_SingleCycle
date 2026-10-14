@@ -7,22 +7,9 @@
 # (default build/baseline/). Prints WNS and the implied Fmax at the end.
 # Run before and after a refactor and compare the reports.
 
-set root [file normalize [file join [file dirname [info script]] ..]]
-set out  [file normalize [expr {[llength $argv] ? [lindex $argv 0] : [file join $root build baseline]}]]
-set part xc7k325tffg900-2
-
-# Source locations. The RTL list is shared with sim/run_regression.sh.
-# Ticket #4 moves the image and constraints into rtl/ and constraints/.
-set hex_dir [file join $root Bruno_RISCV.srcs sources_1 imports FROM_BLINKER_TO_RISCV]
-set xdc     [file join $root Bruno_RISCV.srcs constrs_1 imports Desktop Genesys-2-Master.xdc]
-set rtl_files {}
-set fh [open [file join $root vivado rtl_sources.txt]]
-foreach line [split [read $fh] "\n"] {
-    set line [string trim $line]
-    if {$line eq "" || [string index $line 0] eq "#"} continue
-    lappend rtl_files [file join $root $line]
-}
-close $fh
+source [file join [file dirname [info script]] sources.tcl]
+set out [file normalize [expr {[llength $argv] ? [lindex $argv 0] : [file join $root build baseline]}]]
+set hex_dir [file dirname $hex]
 
 file mkdir $out
 read_verilog $rtl_files

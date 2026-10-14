@@ -16,9 +16,14 @@ HEX="$(make -s --no-print-directory -C "$FW_DIR" print-hex-path)"
 
 REF="$(mktemp)"
 trap 'rm -f "$REF"' EXIT
-if git -C "$FW_DIR" ls-files --error-unmatch "$HEX" >/dev/null 2>&1; then
-    git -C "$FW_DIR" show "HEAD:$(git -C "$FW_DIR" ls-files --full-name "$HEX")" > "$REF"
+HEX_REPO_PATH="$(git -C "$FW_DIR" ls-files --full-name "$HEX" 2>/dev/null || true)"
+if [ -n "$HEX_REPO_PATH" ] && git -C "$FW_DIR" cat-file -e "HEAD:$HEX_REPO_PATH" 2>/dev/null; then
+    git -C "$FW_DIR" show "HEAD:$HEX_REPO_PATH" > "$REF"
     SRC="image committed at HEAD"
+elif [ -n "$HEX_REPO_PATH" ]; then
+    # Tracked but not yet in HEAD (e.g. staged after a move): compare against the index.
+    git -C "$FW_DIR" show ":$HEX_REPO_PATH" > "$REF"
+    SRC="image staged in the index"
 else
     cp "$HEX" "$REF"
     SRC="working-copy image (not tracked yet)"

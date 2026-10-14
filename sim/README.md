@@ -6,7 +6,7 @@ captured from. It simulates the `SOC` top in xsim with the committed firmware im
 against a committed golden file.
 
 ```sh
-source /opt/Xilinx/2025.2/Vivado/settings64.sh   # xvlog/xelab/xsim on PATH
+source <vivado-install>/2025.2/Vivado/settings64.sh   # xvlog/xelab/xsim on PATH
 sim/run_regression.sh                              # PASS / FAIL, exit 0 / 1
 ```
 
@@ -15,7 +15,7 @@ simulated time), and takes about 4 minutes of wall time in xsim.
 
 ## What is compared
 
-The testbench (`Bruno_RISCV.srcs/sim_1/imports/FROM_BLINKER_TO_RISCV/bench_iverilog.v`)
+The testbench (`sim/bench.v`)
 writes one line per event to a trace file:
 
 | Line | Meaning |
@@ -41,8 +41,8 @@ grep '^UART' sim/golden/mandelbrot_bram.txt | cut -d' ' -f2 | xxd -r -p
 
 There is no SPI-flash model, so the testbench instantiates `SOC #(.BOOT_ADDR(0))` to
 force BRAM boot. The RAM loads `firmware.hex` with `$readmemh`; the script links the
-canonical image (`Bruno_RISCV.srcs/sources_1/imports/FROM_BLINKER_TO_RISCV/firmware.hex`,
-produced by `make -C firmware`) into `sim/build/` and runs xsim from there.
+canonical image (`rtl/firmware.hex`, produced by `make -C fw`) into `sim/build/` and
+runs xsim from there.
 
 ## Stop conditions
 
@@ -67,9 +67,16 @@ Only when a behavior change is intended. `sim/run_regression.sh --update-golden`
 overwrites the golden trace with the new run; commit it together with the RTL change
 and say why in the commit message.
 
+## Assembly test programs
+
+`sim/asm/` holds the tutorial's Verilog assembler (`riscv_assembly.v`) and a sample
+program (`program_asm.v`, the ASCII mandelbrot). `make -C sim/asm` runs it under
+iverilog and writes `sim/asm/program.hex`, a RAM image in the same format as
+`rtl/firmware.hex`. Neither output is tracked.
+
 ## Synthesis baseline
 
 `vivado/baseline.tcl` runs synthesis, placement and routing for the Genesys 2 part in
 non-project mode and writes reports to `build/baseline/`. The RTL file list it shares
-with the run script is `vivado/rtl_sources.txt`. The numbers from the unrefactored
+with the run script is `vivado/rtl_sources.txt` (via `vivado/sources.tcl`). The numbers from the unrefactored
 design are recorded in `docs/baseline.md`.

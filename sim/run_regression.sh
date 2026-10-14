@@ -16,11 +16,10 @@ set -euo pipefail
 SIM_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$SIM_DIR/.." && pwd)"
 
-# Source locations. The RTL list is shared with vivado/baseline.tcl.
-# Ticket #4 moves the testbench and image into sim/ and rtl/.
+# Source locations. The RTL list is shared with the Vivado scripts.
 RTL_LIST="$ROOT/vivado/rtl_sources.txt"
-BENCH="$ROOT/Bruno_RISCV.srcs/sim_1/imports/FROM_BLINKER_TO_RISCV/bench_iverilog.v"
-HEX="$ROOT/Bruno_RISCV.srcs/sources_1/imports/FROM_BLINKER_TO_RISCV/firmware.hex"
+BENCH="$ROOT/sim/bench.v"
+HEX="$ROOT/rtl/firmware.hex"
 
 GOLDEN="$SIM_DIR/golden/mandelbrot_bram.txt"
 BUILD="$SIM_DIR/build"

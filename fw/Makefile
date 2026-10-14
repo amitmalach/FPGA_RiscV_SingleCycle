@@ -15,12 +15,12 @@ PROG   ?= mandelbrot
 TARGET ?= bram
 BUILD  ?= build
 
-# The single firmware image. Memory.v reads it with $readmemh("firmware.hex")
-# and the Vivado project lists this path in both the synthesis and simulation filesets.
-HEX_OUT ?= ../Bruno_RISCV.srcs/sources_1/imports/FROM_BLINKER_TO_RISCV/firmware.hex
+# The single firmware image. Memory.v reads it with $readmemh("firmware.hex");
+# vivado/create_project.tcl lists it in both the synthesis and simulation filesets.
+HEX_OUT ?= ../rtl/firmware.hex
 
 # Bytes of on-chip RAM and the flash code offset. The linker-side copies live
-# in memory.ld; the RTL-side ones in Memory.v and step1.v.
+# in memory.ld; the RTL-side ones in Memory.v and SOC.v.
 RAM_SIZE          = 6144
 FLASH_CODE_OFFSET = 0xD00000
 

@@ -6,7 +6,7 @@
  * FLASH is the window of the board's SPI flash the core can execute from.
  *
  * FLASH ORIGIN 0x01D00000 = SPIFLASH_BASE (0x01000000, i.e. address bit 24,
- * the isSPIFlash decode in step1.v) + 0x00D00000 (13MB into the physical
+ * the isSPIFlash decode in SOC.v) + 0x00D00000 (13MB into the physical
  * chip). That offset is forced by what already occupies the chip:
  *   0x000000..0xAE9E10  this design's FPGA bitstream (~10.91MB)
  *   0xC00000..0xC9C3E7  scene1.dat, the ST_NICCC polygon stream (640KB)
@@ -18,7 +18,7 @@
  * and 128KB is sized for an IceStick bitstream of a few tens of KB.
  *
  * RAM LENGTH must match Memory.v and RAM_SIZE in the Makefile; FLASH ORIGIN
- * must match SPIFLASH_CODE_OFFSET in step1.v and FLASH_CODE_OFFSET in the
+ * must match SPIFLASH_CODE_OFFSET in SOC.v and FLASH_CODE_OFFSET in the
  * Makefile.
  * =========================================================================== */
 
