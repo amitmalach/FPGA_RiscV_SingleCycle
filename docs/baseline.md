@@ -47,7 +47,7 @@ same `mandelbrot.c` compiled natively emits an 11 014-byte first frame; the SoC 
 8368 bytes, and the two diverge at row 8, pixel 36. A diagnostic firmware run in the
 same harness shows why: `srai` behaves as `srli` (`-1544416 >> 9` yields
 `0x007FF437`, expected `0xFFFFF437`), while software multiplication and the other
-operations checked are correct. The cause is `Processor.v` line 164:
+operations checked are correct. The cause is this ALU arm in `Processor.v`:
 
 ```verilog
 3'b101: aluOut = funct7[5] ? ($signed(aluIn1) >>> shamt) : (aluIn1 >> shamt);

@@ -19,7 +19,7 @@
 // canonical firmware.hex visible in xsim's working directory.
 //
 // Stop conditions (whichever comes first):
-//   * LEDS becomes STOP_LEDS. The mandelbrot demo writes its frame counter to
+//   * LEDS becomes STOP_LEDS (negative = never). The mandelbrot demo writes its frame counter to
 //     the LEDs at the top of every frame, so LEDS==1 means the first frame
 //     has been drawn completely.
 //   * MAX_CYCLES clock cycles (200 MHz input clock) have elapsed.
@@ -86,12 +86,12 @@ module bench();
    integer      fd;
    integer      cycles     = 0;
    integer      uart_bytes = 0;
-   reg          plusarg_given;
+   reg          unused_ok;   // $value$plusargs returns "found"; absence is fine
 
    initial begin
-      plusarg_given = $value$plusargs("out=%s", out_file);
-      plusarg_given = $value$plusargs("max_cycles=%d", max_cycles);
-      plusarg_given = $value$plusargs("stop_leds=%d", stop_leds);
+      unused_ok = $value$plusargs("out=%s", out_file);
+      unused_ok = $value$plusargs("max_cycles=%d", max_cycles);
+      unused_ok = $value$plusargs("stop_leds=%d", stop_leds);
       fd = $fopen(out_file, "w");
       if (fd == 0) begin
          $display("bench: cannot open output file %0s", out_file);
@@ -125,7 +125,7 @@ module bench();
       if (LEDS !== prev_LEDS) begin
          $fdisplay(fd, "LEDS %0d %02h", $time, LEDS);
          prev_LEDS = LEDS;
-         if (LEDS === stop_leds[7:0]) stop("stop_leds");
+         if (stop_leds >= 0 && LEDS === stop_leds[7:0]) stop("stop_leds");
       end
    end
 

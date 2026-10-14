@@ -8,7 +8,7 @@
 # Run before and after a refactor and compare the reports.
 
 set root [file normalize [file join [file dirname [info script]] ..]]
-set out  [expr {[llength $argv] ? [lindex $argv 0] : [file join $root build baseline]}]
+set out  [file normalize [expr {[llength $argv] ? [lindex $argv 0] : [file join $root build baseline]}]]
 set part xc7k325tffg900-2
 
 # Source locations. The RTL list is shared with sim/run_regression.sh.
@@ -46,6 +46,8 @@ report_utilization    -file [file join $out post_route_utilization.rpt]
 report_timing_summary -file [file join $out post_route_timing_summary.rpt]
 write_checkpoint -force    [file join $out post_route.dcp]
 
+# "timing=MET" below covers setup and hold only; pulse-width and recovery checks
+# are in post_route_timing_summary.rpt.
 set wns [get_property SLACK [get_timing_paths -max_paths 1 -nworst 1 -setup]]
 set whs [get_property SLACK [get_timing_paths -max_paths 1 -nworst 1 -hold]]
 set period [get_property PERIOD [get_clocks sys_clk_p]]

@@ -48,9 +48,11 @@ produced by `make -C firmware`) into `sim/build/` and runs xsim from there.
 
 The run ends at whichever comes first:
 
-- the LED register becomes `STOP_LEDS` (default 1). The mandelbrot demo writes its frame
-  counter to the LEDs at the top of every frame, so this marks the end of the first
-  complete frame;
+- the LED register becomes `STOP_LEDS` (default 1; negative disables this condition).
+  The mandelbrot demo writes its frame counter to the LEDs at the top of every frame,
+  so this marks the end of the first complete frame. The run stops at that instant: a
+  UART byte still in flight would not be recorded. That is deterministic, so the gate
+  is unaffected, and in the golden run the last byte finishes before the LED write;
 - `MAX_CYCLES` input-clock cycles (default 400 M, 2 s simulated).
 
 Both are testbench parameters and can be overridden with plusargs
