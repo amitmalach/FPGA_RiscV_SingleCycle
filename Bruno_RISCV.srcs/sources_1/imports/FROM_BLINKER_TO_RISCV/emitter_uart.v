@@ -32,12 +32,26 @@ module corescore_emitter_uart #(
     parameter baud_rate = 115200
 ) (
     input  wire       i_clk,       // main FPGA clock
-    input  wire       i_rst,       // active-high reset
+    input  wire       i_rst,       // active-high reset -- the one exception in
+                                    // this design; resetn elsewhere is active-low
     input  wire [7:0] i_data,      // byte to transmit
     input  wire       i_valid,     // high for one clock when i_data is valid
 
     output reg        o_ready,     // high when UART is ready for a new byte
-    output reg        o_uart_tx    // UART TX output line
+    output reg        o_uart_tx    // UART TX output line -- leaves the FPGA here. On the
+                                    // Genesys2, this pin goes to an onboard FTDI FT232RQ
+                                    // (a USB-to-UART bridge chip), which is what actually
+                                    // shows up as a virtual COM port on the host PC.
+                                    //
+                                    // "TX" here is from the FPGA's own point of view: this
+                                    // module transmits on it. Careful when wiring it up in
+                                    // step1.v -- the board's two UART signal names are built
+                                    // from two different vantage points ("TX"/"RX" from the
+                                    // PC's side, "_in"/"_out" from the FPGA's side), so this
+                                    // output belongs on uart_rx_out (the PC's RX line, an
+                                    // FPGA output), NOT on the similarly-spelled uart_tx_in,
+                                    // which is an FPGA input driven by the FT232RQ. See the
+                                    // extended note in step1.v's port list.
 );
 
     // Number of FPGA clock cycles per UART bit.
@@ -50,13 +64,18 @@ module corescore_emitter_uart #(
     localparam integer CLKS_PER_BIT = clk_freq_hz / baud_rate;
 
     // Width of the counter that counts clock cycles inside one UART bit.
+    // $clog2(x) is a Verilog system function returning the number of bits
+    // needed to count up to x-1 (ceiling of log2(x)) -- e.g. $clog2(1736)
+    // is 11, since 11 bits can count as high as 2047. Computing the width
+    // this way, instead of hardcoding it, keeps clk_cnt correctly sized
+    // even if clk_freq_hz/baud_rate change.
     localparam integer CLK_CNT_WIDTH = $clog2(CLKS_PER_BIT);
 
     // UART transmitter states.
     localparam IDLE = 1'b0;
     localparam SEND = 1'b1;
 
-    reg state;
+    reg state; // current transmitter state: IDLE (waiting) or SEND (shifting a frame out)
 
     // Counts clock cycles inside the current UART bit.
     reg [CLK_CNT_WIDTH-1:0] clk_cnt;
@@ -87,7 +106,7 @@ module corescore_emitter_uart #(
             state     <= IDLE;
             o_ready   <= 1'b1;
             o_uart_tx <= 1'b1;
-            clk_cnt   <= {CLK_CNT_WIDTH{1'b0}};
+            clk_cnt   <= {CLK_CNT_WIDTH{1'b0}}; // {n{1'b0}}: replication operator, n copies of bit 0 -- i.e. just "0" at this width
             bit_index <= 4'd0;
             frame     <= 10'b1111111111;
 
@@ -160,4 +179,3 @@ module corescore_emitter_uart #(
     end
 
 endmodule
-
