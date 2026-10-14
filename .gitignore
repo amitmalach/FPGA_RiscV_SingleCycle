@@ -23,3 +23,10 @@ Thumbs.db
 .vscode/
 .idea/
 .vs/
+
+# Firmware build outputs (firmware/Makefile writes everything under firmware/build/).
+# The *.hex patterns stop stray image copies from reappearing beside the sources;
+# the only tracked image is the one the RTL reads.
+firmware/build/
+firmware/*.hex
+firmware/*.hex.*
