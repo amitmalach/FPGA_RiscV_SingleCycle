@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Enable with: git config core.hooksPath scripts/hooks
+exec make --no-print-directory lint
